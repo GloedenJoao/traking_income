@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="h3">Demonstrativos consolidados</h1>
+  <p class="text-muted">Inclua ou edite lançamentos e acompanhe totais por mês.</p>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="payrollTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">Itens</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="totals-tab" data-bs-toggle="tab" data-bs-target="#totals" type="button" role="tab">Totais</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="queries-tab" data-bs-toggle="tab" data-bs-target="#queries" type="button" role="tab">Consultas</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+  </li>
+</ul>
+<div class="tab-content" id="payrollTabsContent">
+  <div class="tab-pane fade show active" id="items" role="tabpanel">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="h5">Novo item</h2>
+        <form class="row g-3" method="post" action="{{ url_for('create_item') }}">
+          <div class="col-md-3">
+            <label class="form-label">Mês (YYYY-MM)</label>
+            <input required name="month" type="text" pattern="\\d{4}-\\d{2}" class="form-control" placeholder="2025-01">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Assunto</label>
+            <input required name="subject" class="form-control" placeholder="Folha Mensal">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Referência</label>
+            <input name="reference" class="form-control" placeholder="220h">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Tipo</label>
+            <select name="item_type" class="form-select" required>
+              <option value="provento">Provento</option>
+              <option value="desconto">Desconto</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Descrição</label>
+            <input name="description" class="form-control" placeholder="Salário Base">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Valor</label>
+            <input required step="0.01" name="amount" type="number" class="form-control" placeholder="7200.00">
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button class="btn btn-primary" type="submit">Adicionar item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5">Itens cadastrados</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Assunto</th>
+                <th>Descrição</th>
+                <th>Referência</th>
+                <th>Tipo</th>
+                <th class="text-end">Valor</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td><input form="update-item-{{ item.id }}" name="month" value="{{ item.month }}" class="form-control form-control-sm" required></td>
+                <td><input form="update-item-{{ item.id }}" name="subject" value="{{ item.subject }}" class="form-control form-control-sm" required></td>
+                <td><input form="update-item-{{ item.id }}" name="description" value="{{ item.description }}" class="form-control form-control-sm"></td>
+                <td><input form="update-item-{{ item.id }}" name="reference" value="{{ item.reference }}" class="form-control form-control-sm"></td>
+                <td>
+                  <select form="update-item-{{ item.id }}" name="item_type" class="form-select form-select-sm">
+                    <option value="provento" {% if item.item_type == 'provento' %}selected{% endif %}>Provento</option>
+                    <option value="desconto" {% if item.item_type == 'desconto' %}selected{% endif %}>Desconto</option>
+                    <option value="outro" {% if item.item_type == 'outro' %}selected{% endif %}>Outro</option>
+                  </select>
+                </td>
+                <td><input form="update-item-{{ item.id }}" name="amount" value="{{ '%.2f'|format(item.amount) }}" step="0.01" type="number" class="form-control form-control-sm text-end" required></td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button form="update-item-{{ item.id }}" class="btn btn-outline-primary" type="submit">Salvar</button>
+                    <button form="update-item-{{ item.id }}" class="btn btn-outline-danger" type="submit" formaction="{{ url_for('delete_item', item_id=item.id) }}" formmethod="post">Excluir</button>
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="7" class="text-center text-muted">Nenhum item cadastrado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="d-none"><!-- Update this helper block when changing table forms. -->
+          {% for item in items %}
+          <form id="update-item-{{ item.id }}" method="post" action="{{ url_for('update_item', item_id=item.id) }}"></form>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="totals" role="tabpanel">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h2 class="h5">Registrar total mensal</h2>
+        <form class="row g-3" method="post" action="{{ url_for('create_total') }}">
+          <div class="col-md-3">
+            <label class="form-label">Mês</label>
+            <input required name="month" pattern="\\d{4}-\\d{2}" class="form-control" placeholder="2025-01">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Total de proventos</label>
+            <input required step="0.01" name="total_proventos" type="number" class="form-control" placeholder="7200.00">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Total de descontos</label>
+            <input required step="0.01" name="total_descontos" type="number" class="form-control" placeholder="1200.00">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Observações</label>
+            <input name="notes" class="form-control" placeholder="Fonte do cálculo">
+          </div>
+          <div class="col-12 d-flex justify-content-between">
+            <button class="btn btn-secondary" type="submit">Adicionar total</button>
+          </div>
+        </form>
+        <form class="mt-2" method="post" action="{{ url_for('recalculate_totals') }}">
+          <button class="btn btn-outline-primary" type="submit">Recalcular totais a partir dos itens</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5">Totais por mês</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th class="text-end">Proventos</th>
+                <th class="text-end">Descontos</th>
+                <th class="text-end">Líquido</th>
+                <th>Observações</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for total in totals %}
+              <tr>
+                <td><input form="update-total-{{ total.id }}" name="month" value="{{ total.month }}" class="form-control form-control-sm" required></td>
+                <td><input form="update-total-{{ total.id }}" name="total_proventos" value="{{ '%.2f'|format(total.total_proventos) }}" step="0.01" type="number" class="form-control form-control-sm text-end" required></td>
+                <td><input form="update-total-{{ total.id }}" name="total_descontos" value="{{ '%.2f'|format(total.total_descontos) }}" step="0.01" type="number" class="form-control form-control-sm text-end" required></td>
+                <td><input disabled value="{{ '%.2f'|format(total.valor_liquido) }}" class="form-control form-control-sm text-end"></td>
+                <td><input form="update-total-{{ total.id }}" name="notes" value="{{ total.notes }}" class="form-control form-control-sm"></td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button form="update-total-{{ total.id }}" class="btn btn-outline-primary" type="submit">Salvar</button>
+                    <button form="update-total-{{ total.id }}" class="btn btn-outline-danger" type="submit" formaction="{{ url_for('delete_total', total_id=total.id) }}" formmethod="post">Excluir</button>
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="text-center text-muted">Nenhum total cadastrado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="d-none"><!-- Sync with totals table actions whenever buttons change. -->
+          {% for total in totals %}
+          <form id="update-total-{{ total.id }}" method="post" action="{{ url_for('update_total', total_id=total.id) }}"></form>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="queries" role="tabpanel">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h5">Consultas rápidas</h2>
+        <form class="row g-3" method="get" action="{{ url_for('index') }}">
+          <div class="col-md-4">
+            <label class="form-label">Filtrar por mês</label>
+            <select name="filter_month" class="form-select">
+              <option value="">Todos</option>
+              {% for month in months %}
+              <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>{{ month }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Tipo</label>
+            <select name="filter_type" class="form-select">
+              <option value="">Todos</option>
+              <option value="provento" {% if selected_type == 'provento' %}selected{% endif %}>Provento</option>
+              <option value="desconto" {% if selected_type == 'desconto' %}selected{% endif %}>Desconto</option>
+              <option value="outro" {% if selected_type == 'outro' %}selected{% endif %}>Outro</option>
+            </select>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary" type="submit">Consultar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h2 class="h5">Resultados</h2>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Assunto</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th class="text-end">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in query_results %}
+              <tr>
+                <td>{{ item.month }}</td>
+                <td>{{ item.subject }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.item_type|title }}</td>
+                <td class="text-end">{{ '%.2f'|format(item.amount) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted">Nenhum resultado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane fade" id="dashboard" role="tabpanel">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 class="h5 mb-0">Série histórica</h2>
+                <p class="text-muted small mb-0">Baseada na tabela de totais.</p>
+              </div>
+            </div>
+            <canvas id="historyChart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h2 class="h5">Mês mais recente</h2>
+            {% if dashboard_data.latest %}
+            <p class="mb-1"><strong>Mês:</strong> {{ dashboard_data.latest.month }}</p>
+            <p class="mb-1 text-success"><strong>Proventos:</strong> R$ {{ '%.2f'|format(dashboard_data.latest.total_proventos) }}</p>
+            <p class="mb-1 text-danger"><strong>Descontos:</strong> R$ {{ '%.2f'|format(dashboard_data.latest.total_descontos) }}</p>
+            <p class="mb-3"><strong>Líquido:</strong> R$ {{ '%.2f'|format(dashboard_data.latest.valor_liquido) }}</p>
+            <p class="small text-muted">{{ dashboard_data.latest.notes or 'Sem observações' }}</p>
+            {% else %}
+            <p class="text-muted">Sem dados ainda.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const series = {{ dashboard_data.series | tojson }};
+  const ctx = document.getElementById('historyChart');
+  if (ctx && series.months.length) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.months,
+        datasets: [
+          {
+            label: 'Proventos',
+            data: series.proventos,
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25,135,84,0.1)',
+            tension: 0.2,
+          },
+          {
+            label: 'Descontos',
+            data: series.descontos,
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220,53,69,0.1)',
+            tension: 0.2,
+          },
+          {
+            label: 'Líquido',
+            data: series.liquido,
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.1)',
+            tension: 0.2,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (value) => `R$ ${value}` }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}
