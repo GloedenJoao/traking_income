@@ -74,14 +74,27 @@
       datasets: [{
         label: 'Valor líquido',
         data: data,
-        borderColor: '#0d6efd',
+        borderColor: '#f2c14f',
+        backgroundColor: 'rgba(242, 193, 79, 0.08)',
+        pointRadius: 4,
+        pointBackgroundColor: '#f2c14f',
         tension: 0.25,
-        fill: false
+        fill: true
       }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: true } }
+      plugins: { legend: { display: true, labels: { color: '#e9edf5' } } },
+      scales: {
+        x: {
+          ticks: { color: '#9fb0c9' },
+          grid: { color: 'rgba(255, 255, 255, 0.06)' }
+        },
+        y: {
+          ticks: { color: '#9fb0c9' },
+          grid: { color: 'rgba(255, 255, 255, 0.06)' }
+        }
+      }
     }
   });
 </script>
