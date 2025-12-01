@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Série histórica do líquido</h5>
+        <canvas id="historyChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Mês mais recente</h5>
+        {% if recent %}
+          <p class="mb-1"><strong>Período:</strong> {{ recent['period'] }}</p>
+          <p class="mb-1 text-success"><strong>Proventos:</strong> R$ {{ '%.2f'|format(recent['total_proventos']) }}</p>
+          <p class="mb-1 text-danger"><strong>Descontos:</strong> R$ {{ '%.2f'|format(recent['total_descontos']) }}</p>
+          <p class="mb-0"><strong>Líquido:</strong> R$ {{ '%.2f'|format(recent['valor_liquido']) }}</p>
+        {% else %}
+          <p>Sem dados ainda.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Totais consolidados</h5>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Proventos</th>
+                <th>Descontos</th>
+                <th>Líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for total in totals %}
+              <tr>
+                <td>{{ total['period'] }}</td>
+                <td class="text-success">R$ {{ '%.2f'|format(total['total_proventos']) }}</td>
+                <td class="text-danger">R$ {{ '%.2f'|format(total['total_descontos']) }}</td>
+                <td>R$ {{ '%.2f'|format(total['valor_liquido']) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">Nenhum dado cadastrado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+  const ctx = document.getElementById('historyChart');
+  const labels = [{% for total in totals %}'{{ total['period'] }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+  const data = [{% for total in totals %}{{ total['valor_liquido']|float }}{% if not loop.last %}, {% endif %}{% endfor %}];
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Valor líquido',
+        data: data,
+        borderColor: '#0d6efd',
+        tension: 0.25,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } }
+    }
+  });
+</script>
+{% endblock %}

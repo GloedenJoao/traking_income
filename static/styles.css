@@ -1,0 +1,13 @@
+body {
+  background-color: #f8f9fb;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
