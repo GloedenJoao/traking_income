@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Consultas</h1>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Filtrar lançamentos</h5>
+        <form method="get">
+          <div class="mb-3">
+            <label class="form-label" for="period">Período (YYYY-MM)</label>
+            <input class="form-control" type="text" id="period" name="period" value="{{ request.args.get('period', '') }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="entry_type">Tipo</label>
+            <select class="form-select" id="entry_type" name="entry_type">
+              <option value="">Todos</option>
+              <option value="provento" {% if request.args.get('entry_type') == 'provento' %}selected{% endif %}>Provento</option>
+              <option value="desconto" {% if request.args.get('entry_type') == 'desconto' %}selected{% endif %}>Desconto</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Resultado dos lançamentos</h5>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in entries %}
+              <tr>
+                <td>{{ entry['period'] }}</td>
+                <td>{{ entry['description'] }}</td>
+                <td class="text-capitalize">{{ entry['entry_type'] }}</td>
+                <td>R$ {{ '%.2f'|format(entry['amount']) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">Sem resultados para os filtros.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Totais por mês</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Proventos</th>
+                <th>Descontos</th>
+                <th>Líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for total in totals %}
+              <tr>
+                <td>{{ total['period'] }}</td>
+                <td class="text-success">R$ {{ '%.2f'|format(total['total_proventos']) }}</td>
+                <td class="text-danger">R$ {{ '%.2f'|format(total['total_descontos']) }}</td>
+                <td>R$ {{ '%.2f'|format(total['valor_liquido']) }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4">Nenhum total encontrado.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

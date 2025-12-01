@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Totais consolidados</h1>
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Proventos</th>
+            <th>Descontos</th>
+            <th>Líquido</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for total in totals %}
+          <tr>
+            <td>{{ total['period'] }}</td>
+            <td class="text-success">R$ {{ '%.2f'|format(total['total_proventos']) }}</td>
+            <td class="text-danger">R$ {{ '%.2f'|format(total['total_descontos']) }}</td>
+            <td>R$ {{ '%.2f'|format(total['valor_liquido']) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4">Nenhum dado cadastrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

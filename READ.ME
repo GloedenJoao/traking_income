@@ -1,0 +1,35 @@
+# Controle de Olerites
+
+Aplicação web em Flask para consolidar e consultar demonstrativos de pagamento (proventos e descontos) em um banco SQLite.
+
+## Pré-requisitos
+- Python 3.11+
+- Virtualenv recomendado
+
+## Instalação
+```bash
+python -m venv .venv
+source .venv/bin/activate  # ou .venv\\Scripts\\activate no Windows
+pip install -r requirements.txt
+```
+
+## Como executar
+```bash
+flask --app app run --debug
+```
+A aplicação ficará disponível em http://localhost:5000.
+
+## Estrutura de dados
+- `detail_entries`: granularidade por item (período, descrição, tipo, valor).
+- `monthly_totals`: consolidação mensal (proventos, descontos e líquido) recalculada automaticamente a cada alteração.
+
+## Fluxo de uso
+1. Acesse a aba **Lançamentos** para incluir, editar ou excluir itens.
+2. Consulte a aba **Consultas** para filtrar lançamentos ou visualizar totais.
+3. A aba **Dashboard** mostra a série histórica e o mês mais recente.
+
+## Testes
+Use `pytest` para executar testes automatizados:
+```bash
+pytest
+```
